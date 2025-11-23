@@ -1,0 +1,31 @@
+{% extends 'products/base.html' %}
+
+{% block content %}
+<h2>نتایج جستجو</h2>
+
+<form method="GET" action="{% url 'product_search' %}">
+    <input type="text" name="q" value="{{ query }}" placeholder="جستجو...">
+    <button type="submit">جستجو</button>
+</form>
+
+<hr>
+
+{% if query %}
+    <p>نتایج برای: <strong>{{ query }}</strong></p>
+
+    {% if results %}
+        <ul>
+            {% for product in results %}
+                <li>
+                    <a href="{% url 'product_detail' product.id %}">
+                        {{ product.name }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>هیچ نتیجه‌ای یافت نشد.</p>
+    {% endif %}
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>داشبورد هوشمند تحلیل داده</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <style>
+        body { background-color: #f8f9fa; font-family: Tahoma, sans-serif; padding-top: 30px; }
+        .container { max-width: 1200px; }
+        .card { border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .card-header { background-color: #fff; border-bottom: 1px solid #eee; font-weight: bold; color: #333; }
+        .upload-box { background: #e9ecef; border: 2px dashed #ced4da; padding: 30px; text-align: center; border-radius: 10px; }
+        h1 { color: #2c3e50; font-weight: 900; }
+        .table-sm th, .table-sm td { font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>🚀 داشبورد تحلیل داده</h1>
+        <span class="badge bg-primary">Django + Pandas</span>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row align-items-center">
+                    <div class="col-md-9">
+                        <label class="form-label">آپلود فایل CSV جدید:</label>
+                        <input type="file" name="file" class="form-control" required>
+                    </div>
+                    <div class="col-md-3 mt-3 mt-md-0">
+                        <button type="submit" class="btn btn-success w-100">📤 تحلیل کن</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if error_message %}
+        <div class="alert alert-danger shadow-sm">{{ error_message }}</div>
+    {% endif %}
+
+    {% if file_obj %}
+        <div class="alert alert-info d-flex justify-content-between align-items-center">
+            <span>📁 فایل در حال بررسی: <strong>{{ file_obj.file.name }}</strong></span>
+            <a href="{% url 'delete_file' file_obj.id %}" class="btn btn-sm btn-danger" 
+               onclick="return confirm('مطمئن هستید که می‌خواهید این فایل را حذف کنید؟ این عمل غیر قابل بازگشت است.');">
+                ❌ حذف فایل
+            </a>
+        </div>
+
+        {% if stats_html %}
+        <div class="card mb-4">
+            <div class="card-header">📈 آمار توصیفی (فقط ستون‌های عددی)</div>
+            <div class="card-body p-1">
+                <div class="table-responsive">
+                    {{ stats_html|safe }}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="row">
+            
+            <div class="col-lg-6">
+                {% if file_obj %}
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span id="chart-title">📊 {{ analysis_data.chart_title }}</span>
+                        <div class="d-flex gap-2">
+                            <select id="col-x-select" class="form-select form-select-sm">
+                                {% for col in analysis_data.text_cols %}
+                                <option value="{{ col }}" {% if forloop.first %}selected{% endif %}>X: {{ col }}</option>
+                                {% endfor %}
+                            </select>
+                            
+                            <select id="col-y-select" class="form-select form-select-sm">
+                                {% for col in analysis_data.numeric_cols %}
+                                <option value="{{ col }}" {% if forloop.first %}selected{% endif %}>Y: {{ col }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="myChart" height="200"></canvas>
+                        {% if not analysis_data.numeric_cols or not analysis_data.text_cols %}
+                            <div class="alert alert-warning text-center">برای رسم نمودار به حداقل یک ستون عددی و یک ستون متنی نیاز دارید.</div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="col-lg-6">
+                {% if table_html %}
+                <div class="card">
+                    <div class="card-header">📋 پیش‌نمایش داده‌ها (۱۰ ردیف اول)</div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            {{ table_html|safe }}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+        </div>
+
+    {% else %}
+        <div class="upload-box mt-5">
+            <h3>هنوز فایلی آپلود نشده است!</h3>
+            <p class="text-muted">لطفاً یک فایل CSV انتخاب کنید تا جادو شروع شود.</p>
+        </div>
+    {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // داده‌های اولیه از جنگو
+    let currentChart;
+    const initialLabels = JSON.parse('{{ analysis_data.chart_labels|safe }}');
+    const initialData = JSON.parse('{{ analysis_data.chart_data|safe }}');
+
+    function drawChart(labels, data, title) {
+        const ctx = document.getElementById('myChart');
+        if (currentChart) {
+            currentChart.destroy(); // حذف نمودار قبلی
+        }
+        
+        document.getElementById('chart-title').innerText = '📊 ' + title;
+
+        if (labels.length === 0 || data.length === 0) {
+            ctx.innerHTML = '<div class="alert alert-warning text-center">داده‌ای برای رسم یافت نشد.</div>';
+            return;
+        }
+
+        currentChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'مقدار',
+                    data: data,
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1,
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#f3f3f3' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // تابع اصلی برای فراخوانی AJAX
+    function updateChartData() {
+        const colX = document.getElementById('col-x-select').value;
+        const colY = document.getElementById('col-y-select').value;
+        
+        // ساخت URL برای ارسال درخواست به ویو AJAX جنگو
+        const url = "{% url 'get_chart_data' %}?col_x=" + colX + "&col_y=" + colY;
+
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Server returned an error.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // داده‌ها با موفقیت دریافت شدند.
+                // تبدیل داده‌های JSON به آرایه‌های جاواسکریپت
+                const labels = data.labels;
+                const chartData = data.data;
+                const title = data.title;
+                
+                // رسم مجدد نمودار
+                drawChart(labels, chartData, title);
+            })
+            .catch(error => {
+                console.error('AJAX Error:', error);
+                alert('خطا در بارگذاری داده‌های جدید: ' + error.message);
+            });
+    }
+
+    // بارگذاری اولیه نمودار هنگام لود شدن صفحه
+    if (initialLabels.length > 0) {
+        drawChart(initialLabels, initialData, '{{ analysis_data.chart_title }}');
+    }
+
+    // گوش دادن به تغییرات در دراپ‌داون‌ها
+    document.getElementById('col-x-select')?.addEventListener('change', updateChartData);
+    document.getElementById('col-y-select')?.addEventListener('change', updateChartData);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+  {% block page_title %}
+  days info
+  {% endblock  %}
+
+{% block content %}
+  {% include "challenges/includes/header.html" with active_page="day detail" %}
+  <h1>{{ day|title }}</h1>
+    {% if data is not None %}
+    <h2>{{ data }}</h2>
+    {% else %}
+    <p>there is no data</p>
+    {% endif %}
+{% endblock  %}

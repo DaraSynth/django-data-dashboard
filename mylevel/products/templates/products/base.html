@@ -1,0 +1,25 @@
+{% load static %}
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{% block title %}فروشگاه ساده{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'products/style.css' %}">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1 class="site-title">{% block header %}فروشگاه من{% endblock %}</h1>
+    </header>
+
+    <main>
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+      <p style="text-align:center; color:#888; margin:32px 0 8px 0;">© 2025</p>
+    </footer>
+  </div>
+</body>
+</html>

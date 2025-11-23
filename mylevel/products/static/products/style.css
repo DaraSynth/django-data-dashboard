@@ -1,0 +1,93 @@
+/* products/static/products/style.css */
+
+/* پایه و فونت */
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: "Tahoma", "Vazir", sans-serif;
+  background: #f7f7f8;
+  color: #1b1b1b;
+  direction: rtl;
+}
+
+/* ظرف اصلی */
+.container {
+  max-width: 980px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+/* هدر */
+.site-title {
+  font-size: 32px;
+  margin: 8px 0 16px 0;
+  font-weight: 700;
+}
+
+/* دکمه افزودن */
+.btn-add {
+  text-decoration:none;
+  padding:8px 12px;
+  background:#0b57d0;
+  color:white;
+  border-radius:6px;
+}
+
+/* لیست محصولات */
+.product-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.product-card {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 6px 18px rgba(20,20,30,0.06);
+  transition: transform .15s ease, box-shadow .15s ease;
+  text-align: right;
+}
+
+.product-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 30px rgba(20,20,30,0.09);
+}
+
+.product-card a {
+  color: #0b57d0;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.product-price {
+  display: block;
+  margin-top: 8px;
+  font-weight: 700;
+  color: #222;
+}
+
+/* صفحه جزئیات */
+.product-detail {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(20,20,30,0.06);
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 12px;
+  text-decoration: none;
+  color: #444;
+  font-size: 14px;
+}
+
+/* ریسپانسیو موبایل */
+@media (max-width: 480px) {
+  .site-title { font-size: 24px; }
+  .product-card { padding: 10px; }
+}

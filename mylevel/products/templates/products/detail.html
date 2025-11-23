@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>جزئیات محصول</title>
+</head>
+<body>
+
+    <h1>{{ product.title }}</h1>
+
+    <p>{{ product.description }}</p>
+    <p>قیمت: {{ product.price }}</p>
+
+    {% if product.image %}
+        <img src="{{ product.image.url }}" width="300">
+    {% endif %}
+
+    <br><br>
+
+    <a href="{% url 'product_update' product.pk %}">ویرایش</a> |
+    <a href="{% url 'product_delete' product.pk %}">حذف</a> |
+    <a href="{% url 'product_list' %}">بازگشت به لیست</a>
+
+</body>
+</html>
