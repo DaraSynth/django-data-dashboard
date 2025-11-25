@@ -93,8 +93,12 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
-# تنظیمات WhiteNoise
 STORAGES = {
+    # 1. افزودن تنظیمات پیش‌فرض برای فایل‌های مدیا/آپلودی
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    # 2. تنظیمات WhiteNoise برای فایل‌های استاتیک
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
