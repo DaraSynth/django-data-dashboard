@@ -67,7 +67,7 @@ else:
 
 # ... سایر تنظیمات (AUTH_PASSWORD_VALIDATORS و LANGUAGE و TIME_ZONE بدون تغییر) ...
 
-
+ROOT_URLCONF = 'config.urls'
 # --- تنظیمات فایل‌های استاتیک و مدیا ---
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
