@@ -15,7 +15,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # خواندن DEBUG و ALLOWED_HOSTS
 DEBUG = os.environ.get('DEBUG_VALUE', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS_VALUE', '127.0.0.1').split(',')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '127.0.0.1').split(',')
 
 
 # --- نصب و راه‌اندازی اپلیکیشن‌ها ---
